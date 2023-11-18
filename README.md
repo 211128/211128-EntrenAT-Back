@@ -1,6 +1,6 @@
 # Repositorio c1-211099-hexagonal
 
-Bienvenido al repositorio `c1-211128-hexagonal`. Este proyecto utiliza una arquitectura hexagonal y se conecta a una base de datos MySQL.
+Bienvenido al repositorio `211128-EntrenAT-Back`. Este proyecto utiliza una arquitectura hexagonal y se conecta a una base de datos MySQL.
 
 ## Instrucciones de Instalación
 
@@ -12,7 +12,7 @@ Primero, clona el repositorio en tu máquina local.
 
 ```bash
 git clone https://github.com/211128/211128-EntrenAT-Back.git
-cd c1-211128-hexagonal
+cd 211128-EntrenAT-Back
 ``````
 
 ### **Paso 2:** Configurar Variables de Entorno
@@ -20,7 +20,7 @@ cd c1-211128-hexagonal
 Crea un archivo .env en la raíz del proyecto. Usa las siguientes variables de entorno:
 
 ```env
-PORT=3001
+PORT=3006
 DB_HOST=localhost
 DB_USER=<TuUsuarioDB>
 DB_DATABASE=<NombreDeLaBaseDeDatos>
@@ -28,8 +28,6 @@ DB_PASSWORD=<TuContraseñaDB>
 
 ```
 Nota: Asegúrate de reemplazar <TuUsuarioDB>, <NombreDeLaBaseDeDatos> y <TuContraseñaDB> con tus datos correspondientes de la base de datos MySQL.
-
-Es importante mantener la KEY_TOKEN tal como está para que las pruebas preexistentes en el repositorio funcionen correctamente. Si cambias esta key, deberás obtener un nuevo token para que las pruebas funcionen.
 
 ### **Paso 3:** Instalación de Dependencias y Ejecución
 
