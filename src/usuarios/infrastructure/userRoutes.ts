@@ -5,12 +5,15 @@ import { getUserByIdController } from "./controllers/dependencies";
 import { deleteUserByIdController } from "./controllers/dependencies";
 import { updateUserController } from "./controllers/dependencies";
 import { updatePasswordController } from "./controllers/dependencies";
+import { loginController } from "./controllers/dependencies";
 
 
 export const userRouter = express.Router();
 
 // Ruta para registrar un usuario
-userRouter.post("/", registerController.run.bind(registerController));
+userRouter.post("/register", registerController.run.bind(registerController));
+
+userRouter.post('/login',loginController.run.bind(loginController))
 
 // Ruta para obtener todos los usuarios
 userRouter.get("/", listAllUserController.run.bind(listAllUserController));

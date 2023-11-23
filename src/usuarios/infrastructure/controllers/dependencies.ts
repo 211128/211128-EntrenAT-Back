@@ -23,12 +23,17 @@ import { UpdatePasswordUseCase } from "../../application/updatePasswordUseCase";
 
 import { SetAsInactiveController } from "./setAsInactiveController";
 import { SetAsInactiveUseCase } from "../../application/setAsInactiveUseCase";
+import { LoginController } from "./loginController";
+import { LoginUseCase } from "../../application/loginUseCase";
 
 export const userMysqlRepository = new UserMysqlRepository();
 
 export const registerUseCase = new RegisterUseCase(userMysqlRepository);
 export const registerController = new RegisterController(registerUseCase);
 
+
+export const loginUseCase = new LoginUseCase(userMysqlRepository)
+export const loginController = new LoginController(loginUseCase)
 
 export const listAllUseCase = new ListAllUserUseCase(userMysqlRepository)
 export const listAllUserController = new ListAllUserController(listAllUseCase)

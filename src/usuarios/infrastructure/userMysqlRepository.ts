@@ -1,15 +1,19 @@
 import { query } from "../../database/conecction";
-import { User } from "../domain/user";
+import { User, VerifyLogin } from "../domain/user";
 import { IUserRepository } from "../domain/userRepository";
 import { compare, encrypt } from './helpers/hash';
+import { tokenSigIn } from "./helpers/token";
+
+
 
 
 export class UserMysqlRepository implements IUserRepository {
   async registerUser(name: string, email: string, password: string, height: number, weight: number, sex: string): Promise<User | null> {
     try {
+      console.log(name + ": " + email + ": " +password + ": " +height + ": " +weight + ": " +sex)
       const hashPassword = await encrypt(password);
-      const sql = "INSERT INTO users (Name, Email, Phone, Password, Active) VALUES (?, ?, ?, ?, ?)";
-      const params: any[] = [name, email, hashPassword];
+      const sql = "INSERT INTO register (name, email, password, height, weight, sex) VALUES (?, ?, ?, ?, ?, ?)";
+      const params: any[] = [name, email, hashPassword, height, weight, sex];
       const [result]: any = await query(sql, params);
       if (result.insertId) {
         // Crear una instancia de User con el ID generado
@@ -25,9 +29,47 @@ export class UserMysqlRepository implements IUserRepository {
     }
   }
 
+  async loginUser(email: string, password: string): Promise<VerifyLogin  |string | null> {
+    try {
+        // Primero, obtener el usuario por email.
+        const [users]: any = await query('SELECT * FROM register WHERE email = ? LIMIT 1', [email]);
+      
+        if (!users || users.length === 0) {
+            return null
+        }
+
+        const user = users[0];
+        
+        // Verificar si la contraseña proporcionada coincide con la almacenada en la base de datos.
+        const passwordMatches = await compare(password, user.password); //pasar a la parte 
+      
+
+        if (!passwordMatches) {
+            return 'Unauthorized'
+        }
+        const token:string = tokenSigIn(user.id,user.email)
+
+
+        const dataUser: VerifyLogin = new VerifyLogin(
+            user.id,
+            user.name,
+            user.email,
+            token
+        )
+        console.log(dataUser);
+
+        return dataUser;
+
+    } catch (error) {
+        console.error('Error during login:', error);
+        throw error;
+    }
+}
+
+
   async listAllUsers(): Promise<User[] | null> {
     try {
-      const sql = "SELECT * FROM Users"; // Cambiado a "Users" con mayúscula según la tabla de la base de datos
+      const sql = "SELECT * FROM register"; // Cambiado a "Users" con mayúscula según la tabla de la base de datos
       const [rows]: any = await query(sql);
 
       if (!Array.isArray(rows)) {
@@ -38,9 +80,9 @@ export class UserMysqlRepository implements IUserRepository {
       const users: User[] = rows.map((row: any) => {
         return new User(
           row.ID,      // Cambiado a "ID" con mayúscula según la columna de la base de datos
-          row.Name,    // Cambiado a "Name" con mayúscula según la columna de la base de datos
-          row.Email,   // Cambiado a "Email" con mayúscula según la columna de la base de datos
-          row.Password,// Cambiado a "Password" con mayúscula según la columna de la base de datos
+          row.name,    // Cambiado a "Name" con mayúscula según la columna de la base de datos
+          row.email,   // Cambiado a "Email" con mayúscula según la columna de la base de datos
+          row.password,// Cambiado a "Password" con mayúscula según la columna de la base de datos
           row.height,   // Cambiado a "Active" con mayúscula según la columna de la base de datos
           row.weight,
           row.sex

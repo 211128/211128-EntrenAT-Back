@@ -14,6 +14,7 @@ const config = {
     connectionLimit: 10,
 };
 
+
 // Crear el pool de conexiones
 const pool = mysql.createPool(config);
 

@@ -1,4 +1,4 @@
-import { User } from "./user";
+import { User, VerifyLogin } from "./user";
 
 export interface IUserRepository {
   registerUser(
@@ -9,6 +9,12 @@ export interface IUserRepository {
     weight: number,
     sex: string,
   ): Promise<User | null>;
+
+  loginUser(
+    email:string,
+    password:string
+):Promise<VerifyLogin | string | null>  //listo
+
 
   listAllUsers(): Promise<User[] | null>;
 
@@ -21,6 +27,8 @@ export interface IUserRepository {
   updatePassword(id: number, password: string, cpassword: string): Promise<User | null> 
 
   setAsInactive(id: number): Promise<number | null>;
+
+
   
 
 

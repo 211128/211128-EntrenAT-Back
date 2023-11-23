@@ -8,7 +8,7 @@ const signale = new Signale();
 app.use(express.json());
 
 // Rutas relacionadas con usuarios
-app.use('/users', userRouter);
+app.use('/api/v1/', userRouter);
 
 
 app.listen(3006, () => {
