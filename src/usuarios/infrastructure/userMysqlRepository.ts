@@ -12,7 +12,7 @@ export class UserMysqlRepository implements IUserRepository {
     try {
       console.log(name + ": " + email + ": " +password + ": " +height + ": " +weight + ": " +sex)
       const hashPassword = await encrypt(password);
-      const sql = "INSERT INTO register (name, email, password, height, weight, sex) VALUES (?, ?, ?, ?, ?, ?)";
+      const sql = "INSERT INTO usuario (nombre, correo, contraseña, altura, peso, gender) VALUES (?, ?, ?, ?, ?, ?)";
       const params: any[] = [name, email, hashPassword, height, weight, sex];
       const [result]: any = await query(sql, params);
       if (result.insertId) {
@@ -29,47 +29,46 @@ export class UserMysqlRepository implements IUserRepository {
     }
   }
 
-  async loginUser(email: string, password: string): Promise<VerifyLogin  |string | null> {
+  async loginUser(email: string, password: string): Promise<VerifyLogin | null> {
     try {
-        // Primero, obtener el usuario por email.
-        const [users]: any = await query('SELECT * FROM register WHERE email = ? LIMIT 1', [email]);
-      
-        if (!users || users.length === 0) {
-            return null
+        const userSql = "SELECT UserID AS userid, Nombre AS username, Correo AS email, Contraseña AS password FROM Usuario WHERE Correo = ? LIMIT 1";
+        const [userRows]: any = await query(userSql, [email]);
+
+        if (!Array.isArray(userRows) || userRows.length === 0) {
+            return null; // El usuario no existe
         }
 
-        const user = users[0];
-        
-        // Verificar si la contraseña proporcionada coincide con la almacenada en la base de datos.
-        const passwordMatches = await compare(password, user.password); //pasar a la parte 
-      
+        const userRow = userRows[0];
 
-        if (!passwordMatches) {
-            return 'Unauthorized'
+        const isPasswordMatch = await compare(password, userRow.password);
+
+        if (!isPasswordMatch) {
+            return null; // Contraseña incorrecta
         }
-        const token:string = tokenSigIn(user.id,user.email)
 
+        const user = new VerifyLogin(
+            userRow.userid,
+            userRow.username,
+            userRow.email,
+     
+          
+        );
 
-        const dataUser: VerifyLogin = new VerifyLogin(
-            user.id,
-            user.name,
-            user.email,
-            token
-        )
-        console.log(dataUser);
+        console.log("Usuario autenticado:", user);
 
-        return dataUser;
-
+        return user;
     } catch (error) {
-        console.error('Error during login:', error);
-        throw error;
+        console.error("Error en loginUser:", error);
+        return null;
     }
 }
 
 
+
+
   async listAllUsers(): Promise<User[] | null> {
     try {
-      const sql = "SELECT * FROM register"; // Cambiado a "Users" con mayúscula según la tabla de la base de datos
+      const sql = "SELECT * FROM usuario"; // Cambiado a "Users" con mayúscula según la tabla de la base de datos
       const [rows]: any = await query(sql);
 
       if (!Array.isArray(rows)) {
@@ -85,7 +84,8 @@ export class UserMysqlRepository implements IUserRepository {
           row.password,// Cambiado a "Password" con mayúscula según la columna de la base de datos
           row.height,   // Cambiado a "Active" con mayúscula según la columna de la base de datos
           row.weight,
-          row.sex
+          row.sex. 
+          row.id
         );
       });
 
@@ -95,9 +95,11 @@ export class UserMysqlRepository implements IUserRepository {
       return null; // Opcionalmente, podrías lanzar una excepción en lugar de retornar null
     }
   }
-  async deleteUserById(id: string): Promise<string | null> {
+
+  
+  async deleteUserById(id: number): Promise<string | null> {
     try {
-        const sql = 'DELETE FROM users WHERE id = ?';
+        const sql = 'DELETE FROM usuario WHERE UserID = ?';
         const result: any = await query(sql, [id]);
 
         if (!result || result.affectedRows === 0) {
@@ -111,37 +113,37 @@ export class UserMysqlRepository implements IUserRepository {
     }
 }
 
-
-async getUserById(id: string): Promise<User | null> {
+async getUserById(id: number): Promise<User | null> {
   try {
-      const sql = "SELECT * FROM users WHERE id = ? LIMIT 1";
-      const [rows]: any = await query(sql, [id]);
+    const sql = "SELECT UserID, Nombre, Correo, Altura, Peso, Gender FROM usuario WHERE UserID = ? LIMIT 1";
+    const [rows]: any = await query(sql, [id]);
 
-      // Verificar si no se encontraron resultados o si la respuesta es vacía
-      if (!Array.isArray(rows) || rows.length === 0) {
-          return null;
-      }
-
-      const row = rows[0];
-      const user = new User(
-          row.id,
-          row.name,
-          row.email,
-          row.password,
-          row.height,
-          row.weight,
-          row.sex
-      );
-
-      return user;
-  } catch (error) {
-      console.error("Error en getUserById:", error);
+    // Verificar si no se encontraron resultados o si la respuesta es vacía
+    if (!Array.isArray(rows) || rows.length === 0) {
       return null;
+    }
+
+    const row = rows[0];
+    const userData = new User(
+      row.UserID,
+      row.Nombre,
+      row.Correo,
+      row.Contraseña,
+      row.Altura,
+      row.Peso,
+      row.Gender,
+    );
+
+    console.log(userData);
+    return userData;
+  } catch (error) {
+    console.error("Error en getUserById:", error);
+    return null;
   }
 }
 async listAllInactiveUser(): Promise<User[] | null> {
   try {
-      const sql = "SELECT * FROM users WHERE status = false"; // SQL modificado para filtrar por status
+      const sql = "SELECT * FROM usuario WHERE status = false"; // SQL modificado para filtrar por status
       const [rows]: any = await query(sql); // Esto probablemente devuelve un tipo de dato más complejo
 
       if (!Array.isArray(rows)) {
@@ -163,13 +165,13 @@ async updateUsers(id: number, weight: number): Promise<User | null> {
   if (keys.length === 0) return null; // No hay nada que actualizar.
 
   const sqlParts = keys.map(key => `${key} = ?`);
-  const sql = `UPDATE users SET ${sqlParts.join(', ')} WHERE id = ?`;
+  const sql = `UPDATE usuario SET ${sqlParts.join(', ')} WHERE UserID = ?`;
 
   try {
     const values = keys.map(key => updates[key]);
     values.push(id);
     await query(sql, values);
-    const [updatedRows]: any = await query('SELECT * FROM users WHERE id = ?', [id]);
+    const [updatedRows]: any = await query('SELECT * FROM usario WHERE UserID = ?', [id]);
     if (!updatedRows || updatedRows.length === 0) {
       throw new Error('No hay usuario con esa ID.');
     }
@@ -233,7 +235,7 @@ async updatePassword(id: number, password: string, cpassword: string): Promise<U
 
 async setAsInactive(id: number | null): Promise<number | null> {
   try {
-      const sql = 'UPDATE users SET Active = true WHERE id = ?';
+      const sql = 'UPDATE usuario SET CuentaActiva = true WHERE UserID = ?';
       const [resultSet]: any = await query(sql, [id || null]);
 
       if (!resultSet || resultSet.affectedRows === 0) {

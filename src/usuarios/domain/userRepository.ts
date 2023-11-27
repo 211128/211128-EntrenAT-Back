@@ -13,14 +13,14 @@ export interface IUserRepository {
   loginUser(
     email:string,
     password:string
-):Promise<VerifyLogin | string | null>  //listo
+):Promise<VerifyLogin | User | string | null>  //listo
 
 
   listAllUsers(): Promise<User[] | null>;
 
-  deleteUserById(id: string): Promise<string | null>;
+  deleteUserById(id: number): Promise<string | null>;
 
-  getUserById(id: string): Promise<User | null>;
+  getUserById(id: number): Promise<User | null>;
 
   listAllInactiveUser(): Promise<User[] | User | null>;
 

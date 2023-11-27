@@ -4,7 +4,7 @@ import { IUserRepository } from "../domain/userRepository";
 export class GetUserByIdUseCase {
     constructor(readonly userRepository: IUserRepository) {}
     
-    async run(id: string): Promise<User | null> {
+    async run(id: number): Promise<User | null> {
         try {
             // Intenta obtener el usuario por su ID
             const getUserById = await this.userRepository.getUserById(id);

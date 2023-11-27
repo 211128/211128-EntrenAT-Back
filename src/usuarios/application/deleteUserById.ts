@@ -9,7 +9,7 @@ export class DeleteUserUseCase {
      * @param id El ID del usuario que se va a eliminar.
      * @returns Un mensaje de éxito o null si se produce un error.
      */
-    async run(id: string): Promise<string | null> {
+    async run(id: number): Promise<string | null> {
         try {
             // Llama al método de repositorio para eliminar el usuario por su UUID.
             const deleteUser = await this.userRepository.deleteUserById(id);

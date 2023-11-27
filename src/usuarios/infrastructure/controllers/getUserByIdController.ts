@@ -9,15 +9,25 @@ export class GetUserByIdController {
             // Obtener el ID del usuario desde los parámetros de la ruta (por ejemplo, /users/:uuid)
             const { id } = req.params;
 
-            // Ejecutar el caso de uso para obtener el usuario por su UUID
-            const getUserById = await this.getUserByIdUseCase.run(id);
+            // Convertir el ID a número
+            const userId = parseInt(id, 10);
+
+            // Verificar si la conversión fue exitosa
+            if (isNaN(userId)) {
+                return res.status(400).send({
+                    status: "error",
+                    message: "El ID proporcionado no es un número válido",
+                });
+            }
+
+            // Ejecutar el caso de uso para obtener el usuario por su ID
+            const getUserById = await this.getUserByIdUseCase.run(userId);
 
             if (getUserById) {
                 return res.status(200).send({
                     status: "success",
-                    data: {
-                        user: getUserById + " id: " + id,
-                    },
+                    data: getUserById, // Use the actual user data retrieved from the use case
+                    
                 });
             } else {
                 // Enviar una respuesta de error si el usuario no se encontró
@@ -31,7 +41,7 @@ export class GetUserByIdController {
             console.error("Error en GetUserByIdController:", error);
             return res.status(500).send({
                 status: "error",
-                message: "Error interno del servidor",
+                message: "Error interno del servidor pochoclo",
             });
         }
     }
